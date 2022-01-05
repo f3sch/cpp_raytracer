@@ -7,93 +7,85 @@
 namespace raytracer::geo {
 using std::sqrt;
 
-template <typename T> class vec3 {
+class Vec3 {
 public:
-  vec3() : point{0, 0, 0} {}
-  vec3(T x, T y, T z) : point{x, y, z} {}
+  Vec3() : e{0, 0, 0} {}
+  Vec3(double e0, double e1, double e2) : e{e0, e1, e2} {}
 
-  inline T x() const { return point[0]; }
-  inline T y() const { return point[1]; }
-  inline T z() const { return point[2]; }
+  double x() const { return e[0]; }
+  double y() const { return e[1]; }
+  double z() const { return e[2]; }
 
-  vec3 operator-() const { return vec3(-point[0], -point[1], -point[2]); }
-  T operator[](int i) const { return point[i]; }
-  T &operator[](int i) { return point[i]; }
+  Vec3 operator-() const { return Vec3(-e[0], -e[1], -e[2]); }
+  double operator[](int i) const { return e[i]; }
+  double &operator[](int i) { return e[i]; }
 
-  vec3 &operator+=(const vec3 &v) {
-    point[0] += v.point[0];
-    point[1] += v.point[1];
-    point[2] += v.point[2];
+  Vec3 &operator+=(const Vec3 &v) {
+    e[0] += v.e[0];
+    e[1] += v.e[1];
+    e[2] += v.e[2];
     return *this;
   }
 
-  vec3 &operator*=(const T s) {
-    point[0] *= s;
-    point[1] *= s;
-    point[2] *= s;
+  Vec3 &operator*=(const double t) {
+    e[0] *= t;
+    e[1] *= t;
+    e[2] *= t;
     return *this;
   }
-  vec3 &operator/=(const T s) { return *this *= 1 / s; }
 
-  T len() const { return sqrt(len_sqrt()); }
-  T len_sqrt() const {
-    return point[0] * point[0] + point[1] * point[1] + point[2] * point[2];
+  Vec3 &operator/=(const double t) { return *this *= 1 / t; }
+
+  double length() const { return sqrt(length_squared()); }
+
+  double length_squared() const {
+    return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
   }
 
-  // Utility functions
-  template <typename U>
-  friend std::ostream &operator<<(std::ostream &out, const vec3<U> &v) {
-    return out << v.x() << " " << v.y() << " " << v.z();
-  }
-
-private:
-  T point[3];
+public:
+  double e[3];
 };
 
-// Utility functions
-template <typename T>
-inline vec3<T> operator+(const vec3<T> &u, const vec3<T> &v) {
-  return vec3<T>(u.x() + v.x(), u.y() + v.y(), u.z() + v.z());
+inline std::ostream &operator<<(std::ostream &out, const Vec3 &v) {
+  return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
 }
 
-template <typename T>
-inline vec3<T> operator-(const vec3<T> &u, const vec3<T> &v) {
-  return vec3<T>(u.x() - v.x(), u.y() - v.y(), u.z() - v.z());
+inline Vec3 operator+(const Vec3 &u, const Vec3 &v) {
+  return Vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
 }
 
-template <typename T>
-inline vec3<T> operator*(const vec3<T> &u, const vec3<T> &v) {
-  return vec3<T>(u.x() * v.x(), u.y() * v.y(), u.z() * v.z());
+inline Vec3 operator-(const Vec3 &u, const Vec3 &v) {
+  return Vec3(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
 }
 
-template <typename T> inline vec3<T> operator*(const T t, const vec3<T> &v) {
-  return vec3<T>(t * v.x(), t * v.y(), t * v.z);
+inline Vec3 operator*(const Vec3 &u, const Vec3 &v) {
+  return Vec3(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
 }
 
-template <typename T> inline vec3<T> operator*(const vec3<T> &v, const T t) {
-  return t * v;
+inline Vec3 operator*(double t, const Vec3 &v) {
+  return Vec3(t * v.e[0], t * v.e[1], t * v.e[2]);
 }
 
-template <typename T> inline vec3<T> operator/(const T t, const vec3<T> &v) {
-  return (1 / t) * v;
+inline Vec3 operator*(const Vec3 &v, double t) { return t * v; }
+
+inline Vec3 operator/(Vec3 v, double t) { return (1 / t) * v; }
+
+inline double dot(const Vec3 &u, const Vec3 &v) {
+  return u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2];
 }
 
-template <typename T> inline vec3<T> operator/(const vec3<T> &v, const T t) {
-  return v / t;
+inline Vec3 cross(const Vec3 &u, const Vec3 &v) {
+  return Vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
+              u.e[2] * v.e[0] - u.e[0] * v.e[2],
+              u.e[0] * v.e[1] - u.e[1] * v.e[0]);
 }
 
-template <typename T> inline T dot(const vec3<T> &u, const vec3<T> &v) {
-  return u.x() * v.x() + u.y() * v.y() + u.z() * v.z();
-}
-
-template <typename T> inline vec3<T> cross(const vec3<T> &u, const vec3<T> &v) {
-  return vec3<T>(u.y() * v.z() - u.z() * v.y(), u.z() * v.x() - u.x() * v.z(),
-                 u.x() * v.y() - u.y() * v.x());
-}
+inline Vec3 unit_vector(Vec3 v) { return v / v.length(); }
 
 // Type aliases for vec3
-using point3 = vec3<unsigned int>;
-using color = vec3<double>;
+using Vector = Vec3;
+using Point = Vec3;
+using Color = Vec3;
 
 } // namespace raytracer::geo
 

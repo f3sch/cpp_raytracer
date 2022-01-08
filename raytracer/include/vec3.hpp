@@ -121,6 +121,15 @@ template <typename T> inline Vec3<T> random_in_unit_sphere() {
   }
 }
 
+template <typename T> inline Vec3<T> random_in_unit_disk() {
+  while (true) {
+    auto p = Vec3<T>(random_draw<T>(-1, 1), random_draw<T>(-1, 1), 0);
+    if (p.length_squared() >= 1)
+      continue;
+    return p;
+  }
+}
+
 template <typename T> inline Vec3<T> random_unit_vector() {
   return unit_vector<T>(random_in_unit_sphere<T>());
 }

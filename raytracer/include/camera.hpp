@@ -8,26 +8,30 @@ namespace raytracer {
 class Camera {
 public:
   Camera(Point lookfrom, Point lookat, Vector vup, double vfov,
-         double aspect_ratio) {
+         double aspect_ratio, double aperture, double focus_dist) {
 
     auto theta = degrees_to_radians(vfov);
     auto h = tan(theta / 2);
     auto viewport_height = 2.0 * h;
     auto viewport_width = aspect_ratio * viewport_height;
 
-    auto w = unit_vector(lookfrom - lookat);
-    auto u = unit_vector(cross(vup, w));
-    auto v = cross(w, u);
+    w = unit_vector(lookfrom - lookat);
+    u = unit_vector(cross(vup, w));
+    v = cross(w, u);
 
     origin = lookfrom;
-    horizontal = viewport_width * u;
-    vertical = viewport_height * v;
-    lower_left_corner = origin - horizontal / 2 - vertical / 2 - w;
+    horizontal = viewport_width * u * focus_dist;
+    vertical = viewport_height * v * focus_dist;
+    lower_left_corner = origin - horizontal / 2 - vertical / 2 - w * focus_dist;
+    lens_radius = aperture / 2;
   }
 
-  Ray get_ray(double u, double v) const {
-    return Ray(origin,
-               lower_left_corner + u * horizontal + v * vertical - origin);
+  Ray get_ray(double s, double t) const {
+    Vector rd = lens_radius * random_in_unit_disk<double>();
+    Vector offset = u * rd.x() + v * rd.y();
+    // Vector offset = u * rd.x() + v * rd.y();
+    return Ray(origin + offset, lower_left_corner + s * horizontal +
+                                    t * vertical - origin - offset);
   }
 
 private:
@@ -35,6 +39,8 @@ private:
   Point lower_left_corner;
   Vector horizontal;
   Vector vertical;
+  Vector u, v, w;
+  double lens_radius;
 };
 
 } // namespace raytracer

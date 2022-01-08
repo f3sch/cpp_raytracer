@@ -104,8 +104,8 @@ template <typename T> inline T operator*(const Vec3<T> &v, const Vec3<T> &u) {
 }
 
 template <typename T> inline Vec3<T> cross(const Vec3<T> &v, const Vec3<T> &u) {
-  return Vector<T>(v.y() * u.z() - v.z() * u.y(), v.z() * u.x() - v.x() * u.z(),
-                   v.x() * u.y() - v.y() * u.x());
+  return Vec3<T>(v.y() * u.z() - v.z() * u.y(), v.z() * u.x() - v.x() * u.z(),
+                 v.x() * u.y() - v.y() * u.x());
 }
 
 template <typename T> inline Vec3<T> unit_vector(const Vec3<T> &v) {
@@ -128,6 +128,15 @@ template <typename T> inline Vec3<T> random_unit_vector() {
 template <typename T>
 inline Vec3<T> reflect(const Vec3<T> &v, const Vec3<T> &n) {
   return v - 2 * dot(v, n) * n;
+}
+
+template <typename T>
+inline Vec3<T> refract(const Vec3<T> &uv, const Vec3<T> &n,
+                       double etai_over_etat) {
+  auto cos_theta = fmin(dot(-uv, n), 1.0);
+  Vec3<T> r_out_perp = etai_over_etat * (uv + cos_theta * n);
+  Vec3<T> r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
+  return r_out_perp + r_out_parallel;
 }
 
 // Type aliases for vec3

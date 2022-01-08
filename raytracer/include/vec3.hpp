@@ -5,7 +5,7 @@
 #include <cmath>
 #include <ostream>
 
-namespace raytracer::geo {
+namespace raytracer {
 using std::sqrt;
 
 template <typename T> class Vec3 {
@@ -68,6 +68,11 @@ public:
                 random_draw<T>(min, max));
   }
 
+  bool near_zero() const {
+    const auto s = 1e-8;
+    return (fabs(e[0] < s) && fabs(e[1] < s) && fabs(e[2] < s));
+  }
+
   double length() const { return sqrt(length_squared()); }
 
   double length_squared() const {
@@ -120,12 +125,17 @@ template <typename T> inline Vec3<T> random_unit_vector() {
   return unit_vector<T>(random_in_unit_sphere<T>());
 }
 
+template <typename T>
+inline Vec3<T> reflect(const Vec3<T> &v, const Vec3<T> &n) {
+  return v - 2 * dot(v, n) * n;
+}
+
 // Type aliases for vec3
 using DataType = double;
 using Point = Vec3<DataType>;
 using Vector = Vec3<DataType>;
 using Color = Vec3<DataType>;
 
-} // namespace raytracer::geo
+} // namespace raytracer
 
 #endif

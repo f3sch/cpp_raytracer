@@ -4,11 +4,12 @@
 #include "hittable.hpp"
 #include "vec3.hpp"
 
-namespace raytracer::geo {
+namespace raytracer {
 class sphere : public hittable {
 public:
   sphere() {}
-  sphere(Point cen, double r) : center(cen), radius(r) {}
+  sphere(Point cen, double r, shared_ptr<material> m)
+      : center(cen), radius(r), mat_ptr(m) {}
 
   virtual inline bool hit(const Ray &r, double t_min, double t_max,
                           hit_record &rec) const override;
@@ -16,6 +17,7 @@ public:
 private:
   Point center;
   double radius;
+  shared_ptr<material> mat_ptr;
 };
 
 inline bool sphere::hit(const Ray &r, double t_min, double t_max,
@@ -43,10 +45,11 @@ inline bool sphere::hit(const Ray &r, double t_min, double t_max,
   rec.n = (rec.p - center) / radius;
   Vector outward_n = (rec.p - center) / radius;
   rec.set_face_normal(r, outward_n);
+  rec.mat_ptr = mat_ptr;
 
   return true;
 }
 
-} // namespace raytracer::geo
+} // namespace raytracer
 
 #endif

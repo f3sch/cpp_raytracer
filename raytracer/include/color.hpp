@@ -2,13 +2,12 @@
 #define _COLOR
 
 #include "hittable.hpp"
+#include "material.hpp"
 #include "rtweekend.hpp"
 #include <cmath>
 #include <iostream>
 
-namespace raytracer::color {
-using namespace raytracer::geo;
-using namespace raytracer::ray;
+namespace raytracer {
 
 inline void write_color(std::ostream &out, Color pixel_color,
                         int samples_per_pixel) {
@@ -29,7 +28,7 @@ inline void write_color(std::ostream &out, Color pixel_color,
 }
 
 inline double hit_sphere(const Point &center, double radius, const Ray &r) {
-  Vec3 oc = r.origin() - center;
+  auto oc = r.origin() - center;
   auto a = r.direction().length_squared();
   auto half_b = dot(oc, r.direction());
   auto c = oc.length_squared() - radius * radius;
@@ -42,6 +41,10 @@ inline double hit_sphere(const Point &center, double radius, const Ray &r) {
   }
 }
 
+inline Color mult_col(const Color &c1, const Color &c2) {
+  return Color(c1.x() * c2.x(), c1.y() * c2.y(), c1.z() * c2.z());
+}
+
 inline Color ray_color(const Ray &r, const hittable &world, int depth) {
   hit_record rec;
 
@@ -49,8 +52,11 @@ inline Color ray_color(const Ray &r, const hittable &world, int depth) {
     return Color(0, 0, 0);
 
   if (world.hit(r, 0.001, infinity, rec)) {
-    Point target = rec.p + rec.n + random_unit_vector<DataType>();
-    return 0.5 * ray_color(Ray(rec.p, target - rec.p), world, depth - 1);
+    Ray scattered;
+    Color attenuation;
+    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+      return mult_col(attenuation, ray_color(scattered, world, depth - 1));
+    return Color(0, 0, 0);
   }
 
   Vector unit_direction = unit_vector(r.direction());
@@ -58,6 +64,6 @@ inline Color ray_color(const Ray &r, const hittable &world, int depth) {
   return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
 }
 
-} // namespace raytracer::color
+} // namespace raytracer
 
 #endif

@@ -3,9 +3,7 @@
 
 #include "rtweekend.hpp"
 
-namespace raytracer::camera {
-using namespace raytracer::geo;
-using namespace raytracer::ray;
+namespace raytracer {
 
 class Camera {
 public:
@@ -34,5 +32,5 @@ private:
   Vector vertical;
 };
 
-} // namespace raytracer::camera
+} // namespace raytracer
 #endif

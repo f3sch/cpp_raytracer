@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace raytracer::geo {
+namespace raytracer {
 
 class hittable_list : public hittable {
 public:
@@ -40,5 +40,5 @@ inline bool hittable_list::hit(const Ray &r, double t_min, double t_max,
 
   return hit_anything;
 }
-} // namespace raytracer::geo
+} // namespace raytracer
 #endif

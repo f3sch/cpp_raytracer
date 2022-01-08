@@ -2,14 +2,17 @@
 #define _HITTABLE
 
 #include "ray.hpp"
+#include "rtweekend.hpp"
 #include "vec3.hpp"
 
-namespace raytracer::geo {
-using namespace ray;
+namespace raytracer {
+
+class material;
 
 struct hit_record {
   Point p;
   Vector n;
+  shared_ptr<material> mat_ptr;
   double t;
   bool front_face;
 
@@ -25,6 +28,6 @@ public:
                    hit_record &rec) const = 0;
 };
 
-} // namespace raytracer::geo
+} // namespace raytracer
 
 #endif

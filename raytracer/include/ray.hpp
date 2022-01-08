@@ -3,8 +3,7 @@
 
 #include "vec3.hpp"
 
-namespace raytracer::ray {
-using namespace geo;
+namespace raytracer {
 
 class Ray {
 public:
@@ -21,6 +20,6 @@ private:
   Vector dir;
 };
 
-} // namespace raytracer::ray
+} // namespace raytracer
 
 #endif

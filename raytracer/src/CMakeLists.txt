@@ -8,4 +8,4 @@ target_include_directories(
 
 
 add_executable(main main.cpp)
-target_link_libraries(main PRIVATE raytracer)
+target_link_libraries(main PRIVATE raytracer OpenMP::OpenMP_CXX Threads::Threads)

@@ -6,7 +6,10 @@
 #include "material.hpp"
 #include "sphere.hpp"
 
+#include <atomic>
 #include <iostream>
+#include <omp.h>
+#include <vector>
 
 using namespace raytracer;
 
@@ -61,30 +64,43 @@ int main() {
 
   // Image
 
-  const auto aspect_ratio = 16.0 / 9.0;
-  const int image_width = 200;
-  const int image_height = static_cast<int>(image_width / aspect_ratio);
-  const int samples_per_pixel = 25;
-  const int max_depth = 25;
+  constexpr auto aspect_ratio = 16.0 / 9.0;
+  constexpr int image_width = 1200;
+  constexpr int image_height = static_cast<int>(image_width / aspect_ratio);
+  const int samples_per_pixel = 100;
+  const int max_depth = 50;
 
   // World
   auto world = random_scene();
 
   // Camera
-  Point lookfrom(6, 3, 2);
+  Point lookfrom(13, 5, 2);
   Point lookat(0, 0, 0);
   Vector vup(0, 1, 0);
   auto dist_to_focus = (lookfrom - lookat).length();
-  auto aperture = 0.2;
+  auto aperture = 0.1;
 
   Camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+
+  // Buffer
+  std::vector<RGB> buf(image_height * image_width);
 
   // Render
 
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
+  // update
+  std::atomic<unsigned int> count = 0;
+  unsigned int percentage = 0;
+
+#pragma omp parallel for
   for (int j = image_height - 1; j >= 0; --j) {
-    std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+    count++;
+    if (count > static_cast<unsigned int>((image_height * 0.1))) {
+      count = 0;
+      percentage += 10;
+      std::cerr << "\rCompleted: " << percentage << "%" << std::flush;
+    }
     for (int i = 0; i < image_width; ++i) {
       Color pixel_color(0, 0, 0);
       for (int s = 0; s < samples_per_pixel; ++s) {
@@ -93,9 +109,21 @@ int main() {
         Ray r = cam.get_ray(u, v);
         pixel_color += ray_color(r, world, max_depth);
       }
-      write_color(std::cout, pixel_color, samples_per_pixel);
+      write_color(buf, j, i, image_width, pixel_color, samples_per_pixel);
+      // write_color(buf, pixel_color, samples_per_pixel);
+      //  write_color(std::cout, pixel_color, samples_per_pixel);
     }
   }
-
+  /*
+    for (auto j = image_height - 1; j >= 0; --j) {
+      for (auto i = 0; i < image_width; ++i) {
+        buf[j * image_height + i].print(std::cout);
+      }
+    }
+    */
+  std::reverse(buf.begin(), buf.end());
+  for (auto rgb : buf) {
+    rgb.print(std::cout);
+  }
   std::cerr << "\nDone.\n";
 }

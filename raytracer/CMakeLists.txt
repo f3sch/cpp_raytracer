@@ -14,6 +14,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) #move runtime target
 # Externally provided content
 # add_subdirectory(dependencies)
 # include(packages)
+find_package(OpenMP 4.0 REQUIRED)
+find_package(Threads REQUIRED)
 
 # Main targets built by this project
 add_subdirectory(src)

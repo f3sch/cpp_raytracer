@@ -16,8 +16,10 @@ using namespace raytracer;
 hittable_list random_scene() {
   hittable_list world;
 
-  auto ground_material = make_shared<lambertian>(Color(0.5, 0.5, 0.5));
-  world.add(make_shared<sphere>(Point(0, -1000, 0), 1000, ground_material));
+  auto checker =
+      make_shared<checker_texture>(Color(0.2, 0.3, 0.1), Color(0.9, 0.9, 0.9));
+  world.add(make_shared<sphere>(Point(0, -1000, 0), 1000,
+                                make_shared<lambertian>(checker)));
 
   for (int a = -11; a < 11; a++) {
     for (int b = -11; b < 11; b++) {
@@ -32,7 +34,9 @@ hittable_list random_scene() {
           // diffuse
           auto albedo = mult_col(Color::random(), Color::random());
           sphere_material = make_shared<lambertian>(albedo);
-          world.add(make_shared<sphere>(center, 0.2, sphere_material));
+          auto center2 = center + Vector(0, random_draw<double>(0, .5), 0);
+          world.add(make_shared<moving_sphere>(center, center2, 0.0, 1.0, 0.2,
+                                               sphere_material));
         } else if (choose_mat < 0.95) {
           // metal
           auto albedo = Color::random(0.5, 1);
@@ -60,27 +64,61 @@ hittable_list random_scene() {
   return world;
 }
 
+hittable_list two_spheres() {
+  hittable_list objects;
+
+  auto checker =
+      make_shared<checker_texture>(Color(0.2, 0.3, 0.1), Color(0.9, 0.9, 0.9));
+
+  objects.add(make_shared<sphere>(Point(0, -10, 0), 10,
+                                  make_shared<lambertian>(checker)));
+  objects.add(make_shared<sphere>(Point(0, 10, 0), 10,
+                                  make_shared<lambertian>(checker)));
+
+  auto sphere_material = make_shared<dielectric>(1.5);
+  objects.add(make_shared<sphere>(Point(3, 0, 3), 1, sphere_material));
+  // metal
+  // auto albedo = Color::random(0.5, 1);
+  // auto fuzz = random_draw<double>(0, 0.5);
+  // auto sphere_material_m = make_shared<metal>(albedo, fuzz);
+  // objects.add(make_shared<sphere>(Point(3, 0, -3), 1, sphere_material_m));
+
+  return objects;
+}
+
 int main() {
 
   // Image
 
   constexpr auto aspect_ratio = 16.0 / 9.0;
-  constexpr int image_width = 1200;
+  constexpr int image_width = 400;
   constexpr int image_height = static_cast<int>(image_width / aspect_ratio);
-  const int samples_per_pixel = 100;
-  const int max_depth = 50;
+  const int samples_per_pixel = 50;
+  const int max_depth = 25;
 
   // World
-  auto world = random_scene();
+  // auto world = random_scene();
+  // hittable_list world;
+  // auto ground_material = make_shared<lambertian>(Color(0.5, 0.5, 0.5));
+  // world.add(make_shared<sphere>(Point(0, -1000, 0), 1000, ground_material));
+  // auto material1 = make_shared<dielectric>(0.4);
+  // world.add(make_shared<sphere>(Point(0, 1, -2), 1.0, material1));
+  // auto material3 = make_shared<metal>(Color(0.7, 0.6, 0.5), 0.3);
+  // world.add(make_shared<sphere>(Point(2, 1.2, 0), 1.2, material3));
+  // auto material4 = make_shared<texture>("./data/earth.jpg", 0.0);
+  // world.add(make_shared<sphere>(Point(0, 1.4, -3), 1.4, material4));
+  // auto world = random_scene();
+  auto world = two_spheres();
 
   // Camera
-  Point lookfrom(13, 5, 2);
+  Point lookfrom(13, 2, 3);
   Point lookat(0, 0, 0);
   Vector vup(0, 1, 0);
   auto dist_to_focus = (lookfrom - lookat).length();
   auto aperture = 0.1;
 
-  Camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+  Camera cam(lookfrom, lookat, vup, 30, aspect_ratio, aperture, dist_to_focus,
+             0.0, 1.0);
 
   // Buffer
   std::vector<RGB> buf(image_height * image_width);
@@ -110,17 +148,9 @@ int main() {
         pixel_color += ray_color(r, world, max_depth);
       }
       write_color(buf, j, i, image_width, pixel_color, samples_per_pixel);
-      // write_color(buf, pixel_color, samples_per_pixel);
-      //  write_color(std::cout, pixel_color, samples_per_pixel);
     }
   }
-  /*
-    for (auto j = image_height - 1; j >= 0; --j) {
-      for (auto i = 0; i < image_width; ++i) {
-        buf[j * image_height + i].print(std::cout);
-      }
-    }
-    */
+
   std::reverse(buf.begin(), buf.end());
   for (auto rgb : buf) {
     rgb.print(std::cout);

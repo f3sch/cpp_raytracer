@@ -28,12 +28,28 @@
         "CMAKE_CXX_FLAGS": "-march=native",
         "CMAKE_CXX_COMPILER": "clang++"
       }
+    },
+    {
+      "name": "remote",
+      "displayName": "For my Laptop",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/remote",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_FLAGS": "-march=native",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "1"
+      }
     }
   ],
   "buildPresets": [
     {
       "name": "local",
       "configurePreset": "local"
+    },
+    {
+      "name": "remote",
+      "configurePreset": "remote"
     },
     {
       "name": "release",

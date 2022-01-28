@@ -72,8 +72,10 @@ hittable_list two_spheres() {
 
   objects.add(make_shared<sphere>(Point(0, -10, 0), 10,
                                   make_shared<lambertian>(checker)));
+
+  auto pertext = make_shared<noise_texture>();
   objects.add(make_shared<sphere>(Point(0, 10, 0), 10,
-                                  make_shared<lambertian>(checker)));
+                                  make_shared<lambertian>(pertext)));
 
   auto sphere_material = make_shared<dielectric>(1.5);
   objects.add(make_shared<sphere>(Point(3, 0, 3), 1, sphere_material));
@@ -84,6 +86,26 @@ hittable_list two_spheres() {
   // objects.add(make_shared<sphere>(Point(3, 0, -3), 1, sphere_material_m));
 
   return objects;
+}
+
+hittable_list two_perlin_spheres() {
+  hittable_list objects;
+
+  auto pertext = make_shared<noise_texture>(4);
+  objects.add(make_shared<sphere>(Point(0, -1000, 0), 1000,
+                                  make_shared<lambertian>(pertext)));
+  objects.add(
+      make_shared<sphere>(Point(0, 2, 0), 2, make_shared<lambertian>(pertext)));
+
+  return objects;
+}
+
+hittable_list earth() {
+  auto earth_texture = make_shared<image_texture>("../../data/earth.jpg");
+  auto earth_surface = make_shared<lambertian>(earth_texture);
+  auto globe = make_shared<sphere>(Point(0, 0, 0), 2, earth_surface);
+
+  return hittable_list(globe);
 }
 
 int main() {

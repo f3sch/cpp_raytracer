@@ -7,6 +7,7 @@
 #include "stb_image_write.h"
 
 #include "hittable.hpp"
+#include "perlin.hpp"
 #include "rtweekend.hpp"
 
 #include <filesystem>
@@ -31,6 +32,19 @@ public:
 
 private:
   Color color_value;
+};
+
+class noise_texture : public texture {
+public:
+  noise_texture() : scale(1) {}
+  noise_texture(double sc) : scale(sc) {}
+  virtual Color value(double u, double v, const Point &p) const override {
+    return Color(1, 1, 1) * 0.5 * (1 + sin(scale * p.z() + 10 * noise.turb(p)));
+  }
+
+private:
+  perlin noise;
+  double scale;
 };
 
 class checker_texture : public texture {

@@ -37,6 +37,13 @@ template <typename T> inline T random_draw(T min, T max) {
   return dist(gen);
 }
 
+template <> inline int random_draw(int min, int max) {
+  // Returns a random real in [0,1).
+  static std::uniform_int_distribution<int> dist(0.0, 1.0);
+  static std::mt19937 gen;
+  return dist(gen);
+}
+
 inline double clamp(double x, double min, double max) {
   if (x < min)
     return min;

@@ -130,7 +130,7 @@ int main() {
   // auto material4 = make_shared<texture>("./data/earth.jpg", 0.0);
   // world.add(make_shared<sphere>(Point(0, 1.4, -3), 1.4, material4));
   // auto world = random_scene();
-  auto world = two_spheres();
+  auto world = earth();
 
   // Camera
   Point lookfrom(13, 2, 3);
@@ -139,7 +139,7 @@ int main() {
   auto dist_to_focus = (lookfrom - lookat).length();
   auto aperture = 0.1;
 
-  Camera cam(lookfrom, lookat, vup, 30, aspect_ratio, aperture, dist_to_focus,
+  Camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus,
              0.0, 1.0);
 
   // Buffer
@@ -170,6 +170,7 @@ int main() {
         pixel_color += ray_color(r, world, max_depth);
       }
       write_color(buf, j, i, image_width, pixel_color, samples_per_pixel);
+      // write_color(std::cout, pixel_color, samples_per_pixel);
     }
   }
 

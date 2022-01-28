@@ -153,58 +153,59 @@ private:
   }
 };
 
-// class texture : public material {
-// public:
-//   texture(std::filesystem::path f, double rot) : rotation(rot) {
-//     data = stbi_load(f.c_str(), &width, &height, &n, 0);
-//     if (data == NULL) {
-//       std::cerr << "Could not load image: " << f.filename() << std::endl;
-//       std::exit(-1);
-//     }
+class image_texture : public texture {
+public:
+  const static int bytes_per_pixel = 3;
 
-//     std::cerr << "Loaded image " << f.filename() << " of dimensions " <<
-//     width
-//               << "x" << height << " with " << n << " channels" << std::endl;
-//   }
-//   ~texture() { stbi_image_free(data); }
+  image_texture() : data(nullptr), width(0), height(0), bytes_per_scanline(0) {}
 
-//   virtual bool scatter(const Ray &r_in, const hit_record &rec,
-//                        Color &attenuation, Ray &scattered) const override {
-//     auto scatter_direction = rec.n + random_in_unit_sphere<double>();
-//     if (scatter_direction.near_zero()) {
-//       scatter_direction = rec.n;
-//     }
-//     auto target = rec.p + scatter_direction;
-//     scattered = Ray(rec.p, target - rec.p);
-//     attenuation = get_albedo(rec.u, rec.v);
-//     return true;
-//   }
+  image_texture(const char *filename) {
+    auto components_per_pixel = bytes_per_pixel;
 
-// private:
-//   int width;
-//   int height;
-//   int n;
-//   double rotation;
-//   unsigned char *data;
+    data = stbi_load(filename, &width, &height, &components_per_pixel,
+                     components_per_pixel);
 
-//   Color get_albedo(double u, double v) const {
-//     double rot = u + rotation;
-//     if (rot > 1.0) {
-//       rot = rot - 1.0;
-//     }
+    if (!data) {
+      std::cerr << "ERROR: Could not load texture image file '" << filename
+                << "'.\n";
+      width = height = 0;
+    }
 
-//     double uu = rot * width;
-//     double vv = (1.0 - v) * (height - 1);
-//     unsigned int base_pixel =
-//         static_cast<unsigned int>(3 * floor(vv) * width + floor(uu));
+    bytes_per_scanline = bytes_per_pixel * width;
+  }
 
-//     auto r = data[base_pixel + 0];
-//     auto g = data[base_pixel + 1];
-//     auto b = data[base_pixel + 2];
+  ~image_texture() { delete data; }
 
-//     return Color(r, g, b);
-//   }
-// };
+  virtual Color value(double u, double v, const Vector &p) const override {
+    // If we have no texture data, then return solid cyan as a debugging aid.
+    if (data == nullptr)
+      return Color(0, 1, 1);
+
+    // Clamp input texture coordinates to [0,1] x [1,0]
+    u = clamp(u, 0.0, 1.0);
+    v = 1.0 - clamp(v, 0.0, 1.0); // Flip V to image coordinates
+
+    auto i = static_cast<int>(u * width);
+    auto j = static_cast<int>(v * height);
+
+    // Clamp integer mapping, since actual coordinates should be less than 1.0
+    if (i >= width)
+      i = width - 1;
+    if (j >= height)
+      j = height - 1;
+
+    const auto color_scale = 1.0 / 255.0;
+    auto pixel = data + j * bytes_per_scanline + i * bytes_per_pixel;
+
+    return Color(color_scale * pixel[0], color_scale * pixel[1],
+                 color_scale * pixel[2]);
+  }
+
+private:
+  unsigned char *data;
+  int width, height;
+  int bytes_per_scanline;
+};
 
 } // namespace raytracer
 
